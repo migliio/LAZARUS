@@ -2,7 +2,7 @@
 #include <linux/module.h>
 
 #define MODULE_LICENSE ("GPL")
-#define MODULE_AUTHOR ("Claudio Migliorelli <migliorelliclaudio@gmail.com>);
+#define MODULE_AUTHOR ("Claudio Migliorelli <migliorelliclaudio@gmail.com>");
 #define MODULE_TITLE ("A LKM Linux rootkit");
 
 /* System call table address */
@@ -27,5 +27,5 @@ static int __init lzrs_t_load(void)
 /* Unload the LKM */
 static void __exit lzrs_t_unload(void)
 {
-
+  
 }
