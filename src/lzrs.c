@@ -1,9 +1,10 @@
 #include <linux/init.h>
 #include <linux/module.h>
 
-#define MODULE_LICENSE ("GPL")
-#define MODULE_AUTHOR ("Claudio Migliorelli <migliorelliclaudio@gmail.com>");
-#define MODULE_TITLE ("A LKM Linux rootkit");
+#define LAZARUS_MODULE_LICENSE "GPL"
+#define LAZARUS_MODULE_AUTHOR "Claudio Migliorelli <migliorelliclaudio@gmail.com>"
+#define LAZARUS_MODULE_DESCRIPTION "A LKM Linux rootkit"
+#define LAZARUS_MODULE_VERSION "0.1"
 
 /* System call table address */
 void **sct_address;
@@ -27,5 +28,13 @@ static int __init lzrs_t_load(void)
 /* Unload the LKM */
 static void __exit lzrs_t_unload(void)
 {
-  
+
 }
+
+module_init(lzrs_t_load);
+module_exit(lzrs_t_exit);
+
+MODULE_LICENSE(LAZARUS_MODULE_LICENSE);
+MODULE_AUTHOR(LAZARUS_MODULE_AUTHOR);
+MODULE_DESCRIPTION(LAZARUS_MODULE_DESCRIPTION);
+MODULE_VERSION(LAZARUS_MODULE_VERSION);
