@@ -1,5 +1,14 @@
+#include <asm/unistd.h>
+#include <asm/cacheflush.h>
+#include <asm/pgtable_types.h>
 #include <linux/init.h>
 #include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/syscalls.h>
+#include <linux/fs.h>
+#include <linux/sched.h>
+#include <linux/kallsyms.h>
+#include <linux/cred.h>
 
 #define LAZARUS_MODULE_LICENSE "GPL"
 #define LAZARUS_MODULE_AUTHOR "Claudio Migliorelli <migliorelliclaudio@gmail.com>"
@@ -32,7 +41,7 @@ static void __exit lzrs_t_unload(void)
 }
 
 module_init(lzrs_t_load);
-module_exit(lzrs_t_exit);
+module_exit(lzrs_t_unload);
 
 MODULE_LICENSE(LAZARUS_MODULE_LICENSE);
 MODULE_AUTHOR(LAZARUS_MODULE_AUTHOR);
