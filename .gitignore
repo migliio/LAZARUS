@@ -1,8 +1,10 @@
-# Ignore everything
-*
-
-# But not these files...
-!/src/
+*.ko
+*.o
+*.mod.c
+*.mod
+.*
 !.gitignore
-!Makefile
-!README.md
+!.git
+modules.order
+Module.symvers
+.lzrs.*
