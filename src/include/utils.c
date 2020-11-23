@@ -1,5 +1,5 @@
 #include "utils.h"
-#include "syscall_lib.h"
+#include "syscall_table.h"
 
 /* system call table address */
 void **table_ptr = NULL;
