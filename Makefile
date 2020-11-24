@@ -36,7 +36,10 @@ all:
 	$(MAKE) -C $(BUILD_DIR) M=$(PWD) modules
 
 load:
-	sudo insmod lzrs.ko
+	sudo insmod $(ROOTKIT).ko
+
+unload:
+	sudo rmmod $(ROOTKIT)
 
 clean:
 	$(MAKE) -C $(BUILD_DIR) M=$(PWD) clean
