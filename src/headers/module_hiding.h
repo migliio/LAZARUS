@@ -1,5 +1,5 @@
-#ifndef MHIDE_H
-#define MHIDE_H
+#ifndef M_HIDE_H
+#define M_HIDE_H
 
 /* module hidden */
 extern unsigned int module_hidden;
