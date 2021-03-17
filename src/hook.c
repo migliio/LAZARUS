@@ -6,9 +6,9 @@
 
 static unsigned long fake_sct[320];
 static unsigned long *sct;
+unsigned long do_syscall_call;
 
 struct perf_event *__percpu *sample_hbp;
-static char ksym_name[KSYM_NAME_LEN] = "syscall_return_slowpath";
 
 /*
  * rax -> fake_sct index
@@ -27,29 +27,32 @@ int hook_sys_call_table(void)
   }
 
   memcpy(fake_sct, sct, sizeof(fake_sct));
+
+  return 0;
 }
 
 static void sample_hbp_handler(struct perf_event *bp,
 							   struct perf_sample_data *data,
 							   struct pt_regs *regs)
 {
-  system_call_hook(regs);
-  printk(KERN_INFO "%s executed\n", ksym_name);
+  // hook_sys_call_table();
+  // system_call_hook(regs);
+  debug_print("Hardware breakpoint handler executed\n");
 }
 
 int register_dr_breakpoint(void)
 {
   int ret;
   struct perf_event_attr attr; // performance event attributes
-  void *addr = __symbol_get(ksym_name); // get the symbol address
+  void *call_sys_addr = get_syscall_64_addr();
 
-  printk(KERN_INFO "HW Breakpoint is at address %p", addr);
-
-  if (!addr)
+  if (!call_sys_addr)
 	return -ENXIO; // set errno to "no such device or address"
 
+  debug_print("do_syscall_64 is at address %p", (void *)call_sys_addr);
+
   hw_breakpoint_init(&attr); // create the performance event to monitor
-  attr.bp_addr = (unsigned long)addr;
+  attr.bp_addr = (unsigned long)call_sys_addr;
   attr.bp_len = sizeof(long);
   attr.bp_type = HW_BREAKPOINT_X; // set an execution breakpoint
 
@@ -59,12 +62,12 @@ int register_dr_breakpoint(void)
 	goto fail;
   }
 
-  printk(KERN_INFO "HW Breakpoint for %s installed\n", ksym_name);
+  debug_print("HW Breakpoint installed");
 
   return 0;
 
  fail:
-  printk(KERN_INFO "Breakpoint registration failed\n");
+  printk(KERN_INFO "Breakpoint registration failed");
   
   return ret;
 }

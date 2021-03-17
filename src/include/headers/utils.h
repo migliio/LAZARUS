@@ -24,7 +24,7 @@
 
 /* general LKM settings */
 #define DEBUG_ENABLED 1
-#define STEALTH_MODE 1
+#define STEALTH_MODE 0
 
 /*
  * global variables
