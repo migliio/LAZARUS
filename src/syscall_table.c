@@ -36,7 +36,7 @@ u8 *get_64_sys_call_handler(void)
 }
 
 /* CALL rel32 - relative displacement */
-void *get_syscall_64_addr(void)
+unsigned long get_syscall_64_addr(void)
 {
   int i;
   unsigned long off, cs_off;
@@ -45,12 +45,21 @@ void *get_syscall_64_addr(void)
   for (i = 0; i < 512; i++) {
 	if (is_call_syscall(op)) {
 	  debug_print("Call to do_syscall_64 is at address %p", (void *)op);
-	  off = get_do_sys_displacement(op);
-	  if (!off)
-		return NULL;	  
-	  load_addr_from_cs(&off, cs_off);
-	  return (void *)cs_off;
+	  off = get_do_sys_off(op);
+	  return (void *)off;
 	}
+	op++;
+  }
+  return NULL;
+}
+
+unsigned long get_gadget_addr(void *call_sys_addr)
+{
+  int i;
+  unsigned char *op = (unsigned char*)call_sys_addr;
+  for (i = 0; i < 512; i++) {
+	if (is_sbb_in(op))
+	  return (unsigned long)op;
 	op++;
   }
   return NULL;

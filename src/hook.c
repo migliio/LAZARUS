@@ -44,15 +44,21 @@ int register_dr_breakpoint(void)
 {
   int ret;
   struct perf_event_attr attr; // performance event attributes
-  void *call_sys_addr = get_syscall_64_addr();
+  unsigned long gd_addr;
+  unsigned long call_sys_addr = get_syscall_64_addr();
 
   if (!call_sys_addr)
 	return -ENXIO; // set errno to "no such device or address"
 
   debug_print("do_syscall_64 is at address %p", (void *)call_sys_addr);
 
+  gd_addr = get_gadget_addr((void *)call_sys_addr);
+
+  if (!gd_addr)
+	return -ENXIO;
+
   hw_breakpoint_init(&attr); // create the performance event to monitor
-  attr.bp_addr = (unsigned long)call_sys_addr;
+  attr.bp_addr = gd_addr;
   attr.bp_len = sizeof(long);
   attr.bp_type = HW_BREAKPOINT_X; // set an execution breakpoint
 

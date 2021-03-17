@@ -15,7 +15,8 @@ void *sys_call_table_retrieve(void);
 int set_sct_rw(unsigned long table_ptr);
 int set_sct_ro(unsigned long table_ptr);
 u8 *get_64_sys_call_handler(void);
-void *get_syscall_64_addr(void);
+unsigned long get_syscall_64_addr(void);
+unsigned long get_gadget_addr(void *call_sys_addr);
 
 static inline int is_call_syscall(unsigned char *op)
 {
@@ -27,20 +28,26 @@ static inline int is_call_syscall(unsigned char *op)
   return 0;
 }
 
-static inline unsigned long get_do_sys_displacement(unsigned char *op)
+/* 
+ * "CALL rel32" means that rel32 needs to be sign-extended to 64 bits
+ */
+static inline unsigned long get_do_sys_off(unsigned char *op)
 {
-  unsigned char *temp = kmalloc(sizeof(char)*4, GFP_KERNEL);
-  long off;
-  int err;
+  unsigned long off;
+  int32_t rel32 = *(int32_t *)(op + 1);
 
-  if (!temp)
-	return -ENOBUFS;
-  
-  memcpy(temp, &op[1], sizeof(char)*4);
+  off = (unsigned long)(op + 5 + rel32);
+  return off;
+}
 
-  debug_print("Hex value found: %04x", temp);
+static inline int is_sbb_in(unsigned char *op)
+{
+  if (op[0] == 0x48 && op[1] == 0x19) {
+		debug_print("Gadget found in do_syscall_64");
+		return 1;
+  }
 
-  return (unsigned long)temp;
+  return 0;
 }
 
 #endif
