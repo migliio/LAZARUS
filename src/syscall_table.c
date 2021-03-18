@@ -1,17 +1,32 @@
 #include "utils.h"
 #include "syscall_table.h"
 
-void *sys_call_table_retrieve(void)
+unsigned long *sys_call_table_retrieve(void)
 {
+  #if LINUX_VERSION_CODE > KERNEL_VERSION(4, 4, 0)
   /* looking for the system call table address in exported symbols */
-  return (void *)kallsyms_lookup_name("sys_call_table");
+  return (unsigned long *)kallsyms_lookup_name("sys_call_table");
+
+#else
+	unsigned long int i;
+	unsigned long *syscall_table;
+	
+	for (i = (unsigned long int)sys_close; i < ULONG_MAX;
+			i += sizeof(void *)) {
+		syscall_table = (unsigned long *)i;
+
+		if (syscall_table[__NR_close] == (unsigned long)sys_close)
+			return syscall_table;
+	}
+	return NULL;
+#endif
 }
 
 /* make SCT writeable */
-int set_sct_rw(unsigned long table_ptr)
+int set_sct_rw(unsigned long *table_ptr)
 {
   unsigned int level;
-  pte_t *pte = lookup_address(table_ptr, &level);
+  pte_t *pte = lookup_address((unsigned long)table_ptr, &level);
   if (pte->pte &~_PAGE_RW) {
     pte->pte |=_PAGE_RW;
   }
@@ -19,10 +34,10 @@ int set_sct_rw(unsigned long table_ptr)
 }
 
 /* make SCT read only */
-int set_sct_ro(unsigned long table_ptr)
+int set_sct_ro(unsigned long *table_ptr)
 {
   unsigned int level;
-  pte_t *pte = lookup_address(table_ptr, &level);
+  pte_t *pte = lookup_address((unsigned long)table_ptr, &level);
   pte->pte = pte->pte &~_PAGE_RW;
   return 0;
 }
@@ -53,6 +68,7 @@ unsigned long get_syscall_64_addr(void)
   return NULL;
 }
 
+/* sbb %rdx,%rdx is the next instruction after %rax check */
 unsigned long get_gadget_addr(void *call_sys_addr)
 {
   int i;

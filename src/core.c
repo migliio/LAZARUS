@@ -16,13 +16,7 @@ static int __init module_t_load(void)
   /* start the UDP server */
   //server_start();
 
-  /* retrieve the system call table address */
-  table_ptr = sys_call_table_retrieve();
-
-  /* only for debug reasons */
-  debug_print("Syscall table retrieved: %p", table_ptr);
-
-  register_dr_breakpoint();
+  hook_syscall_table();
   
   return 0;
 }

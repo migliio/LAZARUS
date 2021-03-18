@@ -2,7 +2,7 @@
 #include "syscall_table.h"
 
 /* system call table address */
-void **table_ptr = NULL;
+unsigned long *table_ptr = NULL;
 
 /* set the system call table address */
 int set_syscall_table(void) {

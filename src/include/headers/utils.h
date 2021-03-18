@@ -13,10 +13,8 @@
 #include <linux/delay.h>
 #include <linux/kallsyms.h>
 #include <linux/cred.h>
-
-/*
- * custom defines
- */
+#include <linux/version.h>
+#include <linux/syscalls.h>
 
 /* settings for UDP server */
 #define UDP_PORT 1111
@@ -26,23 +24,14 @@
 #define DEBUG_ENABLED 1
 #define STEALTH_MODE 0
 
-/*
- * global variables
- */
-
 /* global pointer to the system call table */
-extern void **table_ptr;
-
-/*
- * global functions
- */
+extern unsigned long *table_ptr;
 
 /* macro for debug messages */
-#define debug_print(str, ...)  					\
+#define debug_print(str, ...)  				\
 if (DEBUG_ENABLED) {			 			\
-  pr_info("[ LZRS ] [ %s ] " str "\n",				\
+  pr_info("[ LZRS ] [ %s ] " str "\n",		\
 		__func__, ##__VA_ARGS__); 			\
 }
-
 
 #endif

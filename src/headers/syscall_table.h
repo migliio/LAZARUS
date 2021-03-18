@@ -8,16 +8,16 @@
 
 #include "utils.h"
 
-#define load_addr_from_cs(ptr,var) asm volatile("mov %%cs:(%0), %%rax":"=a" (var):"a" (ptr))
+unsigned long *sys_call_table_retrieve(void);
 
-void *sys_call_table_retrieve(void);
+int set_sct_rw(unsigned long *table_ptr);
+int set_sct_ro(unsigned long *table_ptr);
 
-int set_sct_rw(unsigned long table_ptr);
-int set_sct_ro(unsigned long table_ptr);
 u8 *get_64_sys_call_handler(void);
 unsigned long get_syscall_64_addr(void);
 unsigned long get_gadget_addr(void *call_sys_addr);
 
+/* call opcode */
 static inline int is_call_syscall(unsigned char *op)
 {
   if (op[0] == 0xe8) {
@@ -40,6 +40,7 @@ static inline unsigned long get_do_sys_off(unsigned char *op)
   return off;
 }
 
+/* sbb opcode */
 static inline int is_sbb_in(unsigned char *op)
 {
   if (op[0] == 0x48 && op[1] == 0x19) {

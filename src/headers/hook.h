@@ -5,9 +5,7 @@
 #include <linux/hw_breakpoint.h>
 #include "utils.h"
 
-void system_call_hook(struct pt_regs *regs);
-int hook_sys_call_table(void);
-int register_dr_breakpoint(void);
-int unregister_dr_breakpoint(void);
+void patch_rax_reg(struct pt_regs *regs);
+int hook_syscall_table(void);
 
 #endif
