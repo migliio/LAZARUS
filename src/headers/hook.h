@@ -5,6 +5,8 @@
 #include <linux/hw_breakpoint.h>
 #include "utils.h"
 
+extern int is_root;
+
 void patch_rax_reg(struct pt_regs *regs);
 int hook_syscall_table(void);
 
