@@ -3,6 +3,6 @@
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Claudio Migliorelli <migliorelliclaudio@gmail.com>");
-MODULE_DESCRIPTION("A LKM rootkit for 2.x 3.x 4.x Linux kernels");
+MODULE_DESCRIPTION("A LKM rootkit for 5.x Linux kernels");
 
-#endif 
+#endif

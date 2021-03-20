@@ -9,6 +9,7 @@
 
 static unsigned long old_dr[4];
 static unsigned long old_dr6, old_dr7;
+static int idt_patched;
 
 /* load the LKM */
 static int __init module_t_load(void)
@@ -20,6 +21,10 @@ static int __init module_t_load(void)
 
   /* start the UDP server */
   //server_start();
+
+  idt_patched = !patch_idt();
+  if (!idt_patched)
+	return 1;
 
   for (i = 0; i < 4; i++)
 	get_dr(i, &old_dr[i]);
@@ -47,8 +52,6 @@ static void __exit module_t_unload(void)
 
   set_dr(6, old_dr6);
   set_dr(7, old_dr7);
-
-  debug_print("DRs restored");
 
   /* stop the UDP server */
   //server_stop();

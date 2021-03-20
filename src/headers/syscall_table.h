@@ -21,7 +21,6 @@ unsigned long get_gadget_addr(void *call_sys_addr);
 static inline int is_call_syscall(unsigned char *op)
 {
   if (op[0] == 0xe8) {
-	debug_print("Call found in syscall dispatcher");
 	return 1;
   }
 
@@ -44,7 +43,6 @@ static inline unsigned long get_do_sys_off(unsigned char *op)
 static inline int is_sbb_in(unsigned char *op)
 {
   if (op[0] == 0x48 && op[1] == 0x19) {
-		debug_print("Gadget found in do_syscall_64");
 		return 1;
   }
 

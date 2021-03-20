@@ -9,7 +9,6 @@ typedef void (*bp_handler)(struct pt_regs *regs);
 typedef struct dr_bp_t {
   unsigned long dr[4];
   unsigned long dr6, dr7;
-  bp_handler handlers[4];
 } dr_bp;
 
 enum bp_type {
@@ -47,53 +46,74 @@ enum bp_type {
 
 static inline void get_dr(unsigned char num, unsigned long *val)
 {
-	switch (num) {
-	case 0:
-		__get_dr(0, *val);
-		break;
-	case 1:
-		__get_dr(1, *val);
-		break;
-	case 2:
-		__get_dr(2, *val);
-		break;
-	case 3:
-		__get_dr(3, *val);
-		break;
-	case 6:
-		__get_dr(6, *val);
-		break;
-	case 7:
-		__get_dr(7, *val);
-		break;
-	}
+  switch (num) {
+  case 0:
+	__get_dr(0, *val);
+	break;
+  case 1:
+	__get_dr(1, *val);
+	break;
+  case 2:
+	__get_dr(2, *val);
+	break;
+  case 3:
+	__get_dr(3, *val);
+	break;
+  case 6:
+	__get_dr(6, *val);
+	break;
+  case 7:
+	__get_dr(7, *val);
+	break;
+  }
 }
 
 static inline void set_dr(unsigned char num, unsigned long val)
 {
-	switch (num) {
-	case 0:
-		__set_dr(0, val);
-		break;
-	case 1:
-		__set_dr(1, val);
-		break;
-	case 2:
-		__set_dr(2, val);
-		break;
-	case 3:
-		__set_dr(3, val);
-		break;
-	case 6:
-		__set_dr(6, val);
-		break;
-	case 7:
-		__set_dr(7, val);
-		break;
-	}
+  switch (num) {
+  case 0:
+	__set_dr(0, val);
+	break;
+  case 1:
+	__set_dr(1, val);
+	break;
+  case 2:
+	__set_dr(2, val);
+	break;
+  case 3:
+	__set_dr(3, val);
+	break;
+  case 6:
+	__set_dr(6, val);
+	break;
+  case 7:
+	__set_dr(7, val);
+	break;
+  }
 }
 
-int reg_dr_breakpoint(unsigned long addr, int type, int len);
-int unreg_dr_breakpoint(unsigned long addr);
+struct __drreg {
+  unsigned char num;
+  unsigned long val;
+};
+
+static void __on_each_cpu_set_dr(void *data)
+{
+  struct __drreg *dr = data;
+  set_dr(dr->num, dr->val);
+}
+
+static inline void on_each_cpu_set_dr(unsigned char num, unsigned long val)
+{
+  struct __drreg dr = {
+	.num = num,
+	.val = val,
+  };
+
+  on_each_cpu(__on_each_cpu_set_dr, &dr, 0);
+}
+
+int reg_dr_bp(unsigned long addr, int type, int len);
+int unreg_dr_bp(unsigned long addr);
 
 #endif

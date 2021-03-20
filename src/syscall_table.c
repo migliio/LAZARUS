@@ -54,18 +54,17 @@ u8 *get_64_sys_call_handler(void)
 unsigned long get_syscall_64_addr(void)
 {
   int i;
-  unsigned long off, cs_off;
+  unsigned long off;
   void *addr = (void *) get_64_sys_call_handler(); // get the system call handler
   unsigned char *op = (unsigned char *)addr;
   for (i = 0; i < 512; i++) {
 	if (is_call_syscall(op)) {
-	  debug_print("Call to do_syscall_64 is at address %p", (void *)op);
 	  off = get_do_sys_off(op);
-	  return (void *)off;
+	  return (unsigned long)off;
 	}
 	op++;
   }
-  return NULL;
+  return (unsigned long)NULL;
 }
 
 /* sbb %rdx,%rdx is the next instruction after %rax check */
@@ -78,5 +77,5 @@ unsigned long get_gadget_addr(void *call_sys_addr)
 	  return (unsigned long)op;
 	op++;
   }
-  return NULL;
+  return (unsigned long)NULL;
 }
