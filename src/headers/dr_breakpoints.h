@@ -1,7 +1,10 @@
 #ifndef DR_B_H
 #define DR_B_H
 
+#include "utils.h"
+
 #include <linux/smp.h>
+#include <asm/desc.h>
 
 typedef void (*bp_handler)(struct pt_regs *regs);
 
@@ -9,6 +12,7 @@ typedef void (*bp_handler)(struct pt_regs *regs);
 typedef struct dr_bp_t {
   unsigned long dr[4];
   unsigned long dr6, dr7;
+  bp_handler handlers[4];
 } dr_bp;
 
 enum bp_type {
@@ -16,7 +20,9 @@ enum bp_type {
   BP_RW,
 };
 
-/* macros for DR6 */
+/*
+ * DR6
+ */
 #define DR_TRAP0 (1 << 0)
 #define DR_TRAP1 (1 << 1)
 #define DR_TRAP2 (1 << 2)
@@ -25,14 +31,18 @@ enum bp_type {
 #define DR_BS	 (1 << 14)
 #define DR_BT	 (1 << 15)
 
-/* macros for DR7 */
+
+/*
+ * DR7
+ */
+
 #define DR_LE (1 << 8)
 #define DR_GE (1 << 9)
 #define DR_GD (1 << 13) 
 
-#define DR_RW_X 0x0
-#define DR_RW_W 0x1
-#define DR_RW_R 0x3
+#define DR_RW_EXECUTE 0x0
+#define DR_RW_WRITE   0x1
+#define DR_RW_READ    0x3
 
 #define DR_LEN_1 0x0
 #define DR_LEN_2 0x1
@@ -43,6 +53,29 @@ enum bp_type {
 	asm volatile ("mov %0,%%db" #num : : "r" (val))
 #define __get_dr(num, val) \
         asm volatile("mov %%db" #num ",%0" : "=r" (val))
+
+#define DO_DEBUG_VECTOR 1
+#define HML_TO_ADDR(h,m,l)							 \
+((unsigned long) (l) | ((unsigned long) (m) << 16) | \
+((unsigned long) (h) << 32))
+
+static inline void set_CR0_WP(void)
+{
+	unsigned long cr0;
+
+	asm volatile ("mov %%cr0, %0" : "=r" (cr0));
+	cr0 |= 0x00010000;
+	asm volatile ("mov %0, %%cr0" : : "r" (cr0));
+}
+
+static inline void clear_CR0_WP(void)
+{
+	unsigned long cr0;
+
+	asm volatile ("mov %%cr0, %0" : "=r" (cr0));
+	cr0 &= ~0x00010000;
+	asm volatile ("mov %0, %%cr0" : : "r" (cr0));
+}
 
 static inline void get_dr(unsigned char num, unsigned long *val)
 {
@@ -113,7 +146,10 @@ static inline void on_each_cpu_set_dr(unsigned char num, unsigned long val)
   on_each_cpu(__on_each_cpu_set_dr, &dr, 0);
 }
 
-int reg_dr_bp(unsigned long addr, int type, int len);
-int unreg_dr_bp(unsigned long addr);
+extern int is_root;
+
+int reg_dr_bp(unsigned long addr, int type, int len, bp_handler handler);
+int patch_idt(void);
+void unpatch_idt(void);
 
 #endif
