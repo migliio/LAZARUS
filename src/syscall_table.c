@@ -58,8 +58,8 @@ unsigned long get_syscall_64_addr(void)
   void *addr = (void *) get_64_sys_call_handler(); // get the system call handler
   unsigned char *op = (unsigned char *)addr;
   for (i = 0; i < 512; i++) {
-	if (is_call_syscall(op)) {
-	  off = get_do_sys_off(op);
+	if (is_call(op)) {
+	  off = get_call_off(op);
 	  return (unsigned long)off;
 	}
 	op++;

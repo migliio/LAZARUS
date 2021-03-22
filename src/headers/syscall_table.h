@@ -18,7 +18,7 @@ unsigned long get_syscall_64_addr(void);
 unsigned long get_gadget_addr(void *call_sys_addr);
 
 /* call opcode */
-static inline int is_call_syscall(unsigned char *op)
+static inline int is_call(unsigned char *op)
 {
   if (op[0] == 0xe8) {
 	return 1;
@@ -30,7 +30,7 @@ static inline int is_call_syscall(unsigned char *op)
 /* 
  * "CALL rel32" means that rel32 needs to be sign-extended to 64 bits
  */
-static inline unsigned long get_do_sys_off(unsigned char *op)
+static inline unsigned long get_call_off(unsigned char *op)
 {
   unsigned long off;
   int32_t rel32 = *(int32_t *)(op + 1);

