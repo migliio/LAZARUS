@@ -21,36 +21,36 @@ asmlinkage void my_do_debug(struct pt_regs *regs, long error_code)
 	unsigned long dr6;
 	bp_handler handler;
 
-	debug_print("do_debug hijacked");
+	debug_print("HIJACK: do_debug hijacked");
 
-/* 	get_dr(6, &dr6); */
+	get_dr(6, &dr6);
 
-/* 	if (dr6 & DR_BD) { */
-/* 		dr6 &= ~DR_BD; */
-/* 		emulate_cpu(regs); */
-/* 	} */
-/* 	if (dr6 & DR_TRAP0) { */
-/* 		dr6 &= ~DR_TRAP0; */
-/* 		handler = bp.handlers[0]; */
-/* 		goto trap; */
-/* 	} else if (dr6 & DR_TRAP1) { */
-/* 		dr6 &= ~DR_TRAP1; */
-/* 		handler = bp.handlers[1]; */
-/* 		goto trap; */
-/* 	} else if (dr6 & DR_TRAP2) { */
-/* 		dr6 &= ~DR_TRAP2; */
-/* 		handler = bp.handlers[2]; */
-/* 		goto trap; */
-/* 	} else if (dr6 & DR_TRAP3) { */
-/* 		dr6 &= ~DR_TRAP3; */
-/* 		handler = bp.handlers[3]; */
-/* 		goto trap; */
-/* 	} */
-/* 	return; */
-/* trap: */
-/* 	regs->flags |= X86_EFLAGS_RF; */
-/* 	regs->flags &= ~X86_EFLAGS_TF; */
-/* 	handler(regs); */
+	if (dr6 & DR_BD) {
+		dr6 &= ~DR_BD;
+		emulate_cpu(regs);
+	}
+	if (dr6 & DR_TRAP0) {
+		dr6 &= ~DR_TRAP0;
+		handler = bp.handlers[0];
+		goto trap;
+	} else if (dr6 & DR_TRAP1) {
+		dr6 &= ~DR_TRAP1;
+		handler = bp.handlers[1];
+		goto trap;
+	} else if (dr6 & DR_TRAP2) {
+		dr6 &= ~DR_TRAP2;
+		handler = bp.handlers[2];
+		goto trap;
+	} else if (dr6 & DR_TRAP3) {
+		dr6 &= ~DR_TRAP3;
+		handler = bp.handlers[3];
+		goto trap;
+	}
+	return;
+trap:
+	regs->flags |= X86_EFLAGS_RF;
+	regs->flags &= ~X86_EFLAGS_TF;
+	handler(regs);
 }
 
 int patch_idt(void)
