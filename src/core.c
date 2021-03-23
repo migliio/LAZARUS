@@ -47,8 +47,9 @@ static void __exit module_t_unload(void)
     //undo_priv_esc();
   }
 
-  if (idt_patched)
+  if (idt_patched) {
 	unpatch_idt();
+  }
 
   for (i = 0; i < 4; i++)
 	set_dr(i, old_dr[i]);
