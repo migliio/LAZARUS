@@ -20,9 +20,7 @@ enum bp_type {
   BP_RW,
 };
 
-/*
- * DR6
- */
+/* macros for DR6 */
 #define DR_TRAP0 (1 << 0)
 #define DR_TRAP1 (1 << 1)
 #define DR_TRAP2 (1 << 2)
@@ -31,15 +29,14 @@ enum bp_type {
 #define DR_BS	 (1 << 14)
 #define DR_BT	 (1 << 15)
 
-
-/*
- * DR7
- */
-
+/* macros for DR7 */
 #define DR_LE (1 << 8)
 #define DR_GE (1 << 9)
-#define DR_GD (1 << 13) 
+#define DR_RE (1 << 10)
+#define DR_RT (1 << 11)
+#define DR_GD (1 << 13)
 
+/* general DR macros */
 #define DR_RW_EXECUTE 0x0
 #define DR_RW_WRITE   0x1
 #define DR_RW_READ    0x3

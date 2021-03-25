@@ -21,8 +21,6 @@ asmlinkage void my_do_debug(struct pt_regs *regs, long error_code)
 	unsigned long dr6;
 	bp_handler handler;
 
-	debug_print("HIJACK: do_debug hijacked");
-
 	get_dr(6, &dr6);
 
 	if (dr6 & DR_BD) {
@@ -134,13 +132,13 @@ int reg_dr_bp(unsigned long addr, int type, int len, bp_handler handler)
   dr7 <<= (16 + i * 4);
   dr7 |= 0x2 << (i * 2);
 
-  bp.dr7 |= DR_GD;
+  // bp.dr7 |= DR_GD;
   bp.dr7 |= dr7 | DR_LE | DR_GE;
+  bp.dr7 ^= (DR_RE | DR_RT);
 
   on_each_cpu_set_dr(i, bp.dr[i]);
-  on_each_cpu_set_dr(7, bp.dr[7]);
+  on_each_cpu_set_dr(7, bp.dr7);
 
   debug_print("DR breakpoint set in DR%d at address %p", i, (void *)bp.dr[i]);
-
   return 0;
 }
