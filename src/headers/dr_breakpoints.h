@@ -122,28 +122,26 @@ static inline void set_dr(unsigned char num, unsigned long val)
   }
 }
 
-struct __drreg {
+struct curr_dr {
   unsigned char num;
   unsigned long val;
 };
 
-static void __on_each_cpu_set_dr(void *data)
+static void __set_dr_on_each_cpu(void *data)
 {
-  struct __drreg *dr = data;
+  struct curr_dr *dr = data;
   set_dr(dr->num, dr->val);
 }
 
-static inline void on_each_cpu_set_dr(unsigned char num, unsigned long val)
+static inline void set_dr_on_each_cpu(unsigned char num, unsigned long val)
 {
-  struct __drreg dr = {
+  struct curr_dr dr = {
 	.num = num,
 	.val = val,
   };
 
-  on_each_cpu(__on_each_cpu_set_dr, &dr, 0);
+  on_each_cpu(__set_dr_on_each_cpu, &dr, 0);
 }
-
-extern int is_root;
 
 int reg_dr_bp(unsigned long addr, int type, int len, bp_handler handler);
 int patch_idt(void);

@@ -104,6 +104,7 @@ void unpatch_idt(void)
   arch_cmpxchg(patched_addr, new_rip_off, old_rip_off);
   write_idt_entry((gate_desc *)idtr.address, do_debug_v, &old_gate_desc);
   set_CR0_WP();
+  
   debug_print("IDT unpatching done");
 }
 
@@ -136,9 +137,10 @@ int reg_dr_bp(unsigned long addr, int type, int len, bp_handler handler)
   bp.dr7 |= dr7 | DR_LE | DR_GE;
   bp.dr7 ^= (DR_RE | DR_RT);
 
-  on_each_cpu_set_dr(i, bp.dr[i]);
-  on_each_cpu_set_dr(7, bp.dr7);
+  set_dr_on_each_cpu(i, bp.dr[i]);
+  set_dr_on_each_cpu(7, bp.dr7);
 
   debug_print("DR breakpoint set in DR%d at address %p", i, (void *)bp.dr[i]);
+  
   return 0;
 }
