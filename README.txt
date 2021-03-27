@@ -13,7 +13,7 @@ _________________
 2. Usage
 
 
-LAZARUS is a rootkit for Linux Kernels from 5.4.0-70 to 5.7.x that uses
+LAZARUS is a rootkit for Linux Kernels from 5.4.0-70 to 5.6.x that uses
 debug facilities to hook transparently system calls.
 
 
