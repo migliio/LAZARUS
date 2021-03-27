@@ -13,8 +13,8 @@ _________________
 2. Usage
 
 
-LAZARUS is a rootkit for Linux Kernels 5.4.x-5.7.x that uses debug
-facilities to hook transparently system calls.
+LAZARUS is a rootkit for Linux Kernels from 5.4.0-70 to 5.7.x that uses
+debug facilities to hook transparently system calls.
 
 
 1 Installation
@@ -33,4 +33,6 @@ facilities to hook transparently system calls.
 
   To hide files, once the module is loaded, create them with
   `lzrs_keyword' inside the files' name. After `make load', /system
-  escalation/ is done immediately.
+  escalation/ is done immediately. The `execve()' hooking is proven "by
+  hand" (i.e., through `whoami' cli tool) and the other hooked system
+  calls have a `printk()' proof.
