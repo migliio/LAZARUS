@@ -5,6 +5,7 @@
 #include <asm/desc_defs.h>
 #include <asm/msr.h>
 #include <asm/msr-index.h>
+#include <linux/syscalls.h>
 
 #include "utils.h"
 

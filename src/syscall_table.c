@@ -3,7 +3,17 @@
 
 unsigned long *sys_call_table_retrieve(void)
 {
-  return (unsigned long *)kallsyms_lookup_name("sys_call_table");
+  unsigned long *syscall_table;
+  unsigned long int i;
+
+  for (i = (unsigned long int)sys_close; i < ULONG_MAX;
+	   i += sizeof(void *)) {
+	syscall_table = (unsigned long *)i;
+
+	if (syscall_table[__NR_close] == (unsigned long)sys_close)
+	  return syscall_table;
+  }
+  return NULL;
 }
 
 /* make SCT writeable */
