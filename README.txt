@@ -33,6 +33,5 @@ debug facilities to hook transparently system calls.
 
   To hide files, once the module is loaded, create them with
   `lzrs_keyword' inside the files' name. After `make load', /system
-  escalation/ is done immediately. The `execve()' hooking is proven "by
-  hand" (i.e., through `whoami' cli tool) and the other hooked system
-  calls have a `printk()' proof.
+  escalation/ is done immediately. A proof of concept could be done
+  execunting the script `user.sh' under the `./user/' directory.

