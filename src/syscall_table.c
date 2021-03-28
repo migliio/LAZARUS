@@ -6,26 +6,6 @@ unsigned long *sys_call_table_retrieve(void)
   return (unsigned long *)kallsyms_lookup_name("sys_call_table");
 }
 
-/* make SCT writeable */
-int set_sct_rw(unsigned long *table_ptr)
-{
-  unsigned int level;
-  pte_t *pte = lookup_address((unsigned long)table_ptr, &level);
-  if (pte->pte &~_PAGE_RW) {
-    pte->pte |=_PAGE_RW;
-  }
-  return 0;
-}
-
-/* make SCT read only */
-int set_sct_ro(unsigned long *table_ptr)
-{
-  unsigned int level;
-  pte_t *pte = lookup_address((unsigned long)table_ptr, &level);
-  pte->pte = pte->pte &~_PAGE_RW;
-  return 0;
-}
-
 /* get the system call handler from MSR */
 unsigned long get_64_sys_call_handler(void)
 {
