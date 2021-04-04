@@ -144,7 +144,7 @@ static inline void set_dr_on_each_cpu(unsigned char num, unsigned long val)
 }
 
 int reg_dr_bp(unsigned long addr, int type, int len, bp_handler handler);
-int patch_idt(void);
-void unpatch_idt(void);
+int patch_debug_code(void);
+void unpatch_debug_code(void);
 
 #endif

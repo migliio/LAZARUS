@@ -51,7 +51,7 @@ trap:
 	handler(regs);
 }
 
-int patch_idt(void)
+int patch_debug_code(void)
 {
   struct desc_ptr idtr;
   unsigned char *ptr;
@@ -66,8 +66,6 @@ int patch_idt(void)
   addr = (unsigned long) HML_TO_ADDR(gate_ptr->offset_high, gate_ptr->offset_middle, gate_ptr->offset_low);
   if (!addr)
 	return -ENODATA;
-  memcpy(&old_gate_desc, (void *) (idtr.address + do_debug_v * sizeof(gate_desc)), sizeof(gate_desc));
-  pack_gate(&new_gate_desc, GATE_TRAP, (unsigned long)addr, 0x3, 0, 0);
   
   ptr = (unsigned char *)addr;
   for (i = 0; i < 512; i++) {
@@ -82,9 +80,8 @@ int patch_idt(void)
 
 		clear_CR0_WP();
 		arch_cmpxchg(patched_addr, old_rip_off, new_rip_off);
-		write_idt_entry((gate_desc *)idtr.address, do_debug_v, &new_gate_desc);
 		set_CR0_WP();
-		debug_print("IDT patching done");
+		debug_print("debug patching done");
 		return 0;
 	  }
 	  else
@@ -95,17 +92,16 @@ int patch_idt(void)
   return -1;
 }
 
-void unpatch_idt(void)
+void unpatch_debug_code(void)
 {
   struct desc_ptr idtr;
 
   store_idt(&idtr);
   clear_CR0_WP();
   arch_cmpxchg(patched_addr, new_rip_off, old_rip_off);
-  write_idt_entry((gate_desc *)idtr.address, do_debug_v, &old_gate_desc);
   set_CR0_WP();
   
-  debug_print("IDT unpatching done");
+  debug_print("debug unpatching done");
 }
 
 int reg_dr_bp(unsigned long addr, int type, int len, bp_handler handler)

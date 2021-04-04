@@ -5,7 +5,7 @@
 #include "hook.h"
 #include "dr_breakpoints.h"
 
-static int idt_patched;
+static int debug_code_patched;
 static unsigned long old_dr[4];
 static unsigned long old_dr6, old_dr7;
 
@@ -25,8 +25,8 @@ static int __init module_t_load(void)
   get_dr(6, &old_dr6);
   get_dr(7, &old_dr7);
 
-  idt_patched = !patch_idt();
-  if (!idt_patched)
+  debug_code_patched = !patch_debug_code();
+  if (!debug_code_patched)
 	return 1;
 
   hook_syscall_table();
@@ -39,8 +39,8 @@ static void __exit module_t_unload(void)
 {
   int i;
   
-  if (idt_patched)
-	unpatch_idt();
+  if (debug_code_patched)
+	unpatch_debug_code();
 
   /* restore old registers */
   for (i = 0; i < 4; i++)
